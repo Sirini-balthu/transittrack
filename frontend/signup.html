@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="js/config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransitTrack - Student Signup</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #1e293b;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+        }
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: white;
+            padding: 32px;
+            border-radius: 18px;
+            box-shadow: 0 8px 30px #00000012;
+        }
+        h1 { margin-top: 0; color: #123c69; }
+        p { color: #64748b; }
+        label { display: block; margin: 16px 0 7px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        button {
+            width: 100%;
+            margin-top: 22px;
+            padding: 13px;
+            background: #123c69;
+            color: white;
+            border: 0;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:disabled { opacity: 0.6; }
+        #message { margin-top: 16px; overflow-wrap: anywhere; }
+        .success { color: #15803d; }
+        .error { color: #b91c1c; }
+        a { color: #123c69; }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Join TransitTrack</h1>
+        <p>Create your student account.</p>
+
+        <form id="signupForm">
+            <label for="name">Full name</label>
+            <input id="name" name="name" required autocomplete="name">
+
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email"
+                   required autocomplete="email">
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password"
+                   required minlength="8" autocomplete="new-password">
+
+            <button id="submitButton" type="submit">Create Account</button>
+        </form>
+
+        <p id="message" role="status"></p>
+        <p>Already registered? <a href="login.html">Log in</a></p>
+        <p><a href="index.html">Back to home</a></p>
+    </main>
+
+    <script>
+        const API_BASE = "";
+
+        document.getElementById("signupForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
+
+            const message = document.getElementById("message");
+            const button = document.getElementById("submitButton");
+
+            message.textContent = "";
+            message.className = "";
+            button.disabled = true;
+            button.textContent = "Creating account...";
+
+            const data = {
+                name: document.getElementById("name").value.trim(),
+                email: document.getElementById("email").value.trim(),
+                password: document.getElementById("password").value
+            };
+
+            try {
+                const response = await fetch(API_BASE + "/auth/signup", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    throw new Error(result.message || result.error ||
+                        "Registration failed. Please check your details.");
+                }
+
+                message.className = "success";
+                message.textContent = "Account created! Redirecting to login...";
+                setTimeout(() => location.href = "login.html", 1200);
+                document.getElementById("signupForm").reset();
+            } catch (error) {
+                message.className = "error";
+                message.textContent = error.message.includes("Failed to fetch")
+                    ? "Cannot connect to the backend. Check that Spring Boot is running."
+                    : error.message;
+            } finally {
+                button.disabled = false;
+                button.textContent = "Create Account";
+            }
+        });
+    </script>
+</body>
+</html>

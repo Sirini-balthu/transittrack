@@ -1,0 +1,1001 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="js/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | TransitTrack</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=Bricolage+Grotesque:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --teal: #087f72;
+      --dark: #123e39;
+      --cream: #faf8f0;
+      --yellow: #f4d35e;
+      --muted: #687a76;
+      --white: #ffffff;
+      --border: #e4e9e2;
+      --red: #b42318;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--dark);
+      font-family: "Figtree", sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    header {
+      background: white;
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      max-width: 1200px;
+      margin: auto;
+      padding: 16px 22px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .brand {
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 25px;
+      font-weight: 800;
+      color: var(--teal);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 17px;
+      flex-wrap: wrap;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .nav-links a:hover { color: var(--teal); }
+
+    main {
+      max-width: 1200px;
+      padding: 32px 22px 50px;
+      margin: auto;
+    }
+
+    .eyebrow {
+      color: var(--teal);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    h1, h2, h3 {
+      font-family: "Bricolage Grotesque", sans-serif;
+    }
+
+    h1 {
+      font-size: clamp(30px, 5vw, 43px);
+      margin: 8px 0;
+    }
+
+    h2 { font-size: 22px; margin: 0 0 8px; }
+
+    .intro {
+      color: var(--muted);
+      line-height: 1.7;
+      max-width: 760px;
+    }
+
+    .notice {
+      background: #fff4cb;
+      border: 1px solid #f0df9e;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 22px 0;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 15px;
+      margin: 22px 0;
+    }
+
+    .stat, .panel {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .stat strong {
+      display: block;
+      font-family: "Bricolage Grotesque", sans-serif;
+      font-size: 32px;
+      margin-top: 8px;
+    }
+
+    .status {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #d99a24;
+      margin-top: 5px;
+      flex-shrink: 0;
+    }
+
+    .dot.ok { background: #15966c; }
+    .dot.error { background: var(--red); }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    input, button {
+      font: inherit;
+      border-radius: 10px;
+      padding: 11px 13px;
+    }
+
+    input {
+      flex: 1;
+      min-width: 180px;
+      border: 1px solid var(--border);
+      background: white;
+      outline-color: var(--teal);
+    }
+
+    button {
+      border: none;
+      background: var(--teal);
+      color: white;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    button:hover { opacity: .88; }
+
+    .secondary {
+      background: #e8f3ef;
+      color: var(--dark);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      min-width: 620px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 13px 12px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    th {
+      background: #f5f7f1;
+      font-weight: 800;
+    }
+
+    td { line-height: 1.5; }
+
+    .tag {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 20px;
+      background: #e8f3ef;
+      color: var(--teal);
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .section { margin-top: 20px; }
+
+    .empty {
+      padding: 16px;
+      background: #f7f8f4;
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .small {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 23px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 650px) {
+      nav { align-items: flex-start; flex-direction: column; }
+      main { padding: 24px 14px 35px; }
+      .stats { grid-template-columns: 1fr; gap: 10px; }
+      .stat { padding: 15px; }
+      .stat strong { font-size: 27px; }
+    }
+    /* Bus Management styling */
+.bus-management {
+    background: #ffffff;
+    padding: 24px;
+    margin: 28px 0;
+    border-radius: 16px;
+    border: 1px solid #dce8e5;
+    box-shadow: 0 5px 18px rgba(20, 70, 60, 0.08);
+}
+
+.bus-management h2 {
+    color: #14594f;
+    margin-bottom: 8px;
+}
+
+.bus-management h3 {
+    color: #14594f;
+    margin-top: 28px;
+}
+
+#busForm {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 18px;
+    margin-top: 20px;
+}
+
+#busForm label {
+    font-weight: 600;
+    color: #334e49;
+    align-self: end;
+}
+
+#busForm input,
+#busForm select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid #cadbd6;
+    border-radius: 8px;
+    background: #fbfefd;
+    font: inherit;
+}
+
+#busForm input:focus,
+#busForm select:focus {
+    outline: 2px solid #8ccfc0;
+    border-color: #168575;
+}
+
+#busForm button,
+#loadBusesButton,
+#busManagementTable button {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
+}
+
+#busForm button:hover,
+#loadBusesButton:hover,
+#busManagementTable button:hover {
+    opacity: 0.85;
+}
+
+#saveBusButton,
+#loadBusesButton {
+    background: #176b5d;
+    color: white;
+}
+
+#cancelBusButton {
+    background: #edf2f0;
+    color: #344b45;
+}
+
+#busManagementTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 16px;
+}
+
+#busManagementTable th,
+#busManagementTable td {
+    padding: 12px;
+    border-bottom: 1px solid #e2ebe8;
+    text-align: left;
+    white-space: nowrap;
+}
+
+#busManagementTable th {
+    background: #edf7f4;
+    color: #14594f;
+}
+
+#busManagementTable tr:hover td {
+    background: #f7fbfa;
+}
+
+#busManagementTable button {
+    margin: 3px;
+    background: #e1efeb;
+    color: #14594f;
+}
+
+#busMessage {
+    color: #176b5d;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+/* Mobile-friendly layout */
+@media (max-width: 600px) {
+    .bus-management {
+        padding: 15px;
+    }
+
+    #busForm {
+        grid-template-columns: 1fr;
+    }
+
+    #busManagementTable th,
+    #busManagementTable td {
+        padding: 9px;
+    }
+}
+  </style>
+</head>
+
+<body>
+<header>
+  <nav>
+    <a class="brand" href="index.html">TransitTrack</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="routes.html">Routes</a>
+      <a href="student-dashboard.html">Student Dashboard</a>
+      <a href="bus-tracking.html">Bus Tracking</a>
+     <a href="admin-console.html">Console</a>
+      <a href="#" id="logout">Log out</a>
+    </div>
+  </nav>
+</header>
+
+<main>
+  <div class="eyebrow">Project administration</div>
+  <h1>Admin Dashboard</h1>
+  <p class="intro">
+    View the college route records and demonstration bus information
+    supplied by the TransitTrack backend.
+  </p>
+
+  
+<div class="notice">
+    <strong>Admin dashboard:</strong> Manage buses and view route information.
+    Simulated bus coordinates are not real GPS locations.
+    Administrator access protection is still pending.
+</div>
+
+<section class="bus-management">
+    <h2>Bus Management</h2>
+    <p>Add, update, view, and delete buses in the database.</p>
+
+    <form id="busForm">
+        <input type="hidden" id="busId">
+
+        <label for="busNumber">Bus Number</label>
+        <input type="text" id="busNumber"
+               placeholder="Example: TS09AB1234" required>
+
+        <label for="capacity">Capacity</label>
+        <input type="number" id="capacity"
+               placeholder="Example: 40" min="1" required>
+
+        <label for="driverName">Driver Name</label>
+        <input type="text" id="driverName"
+               placeholder="Enter driver name">
+
+        <label for="driverContact">Driver Contact</label>
+        <input type="text" id="driverContact"
+               placeholder="Enter driver contact">
+
+        <label for="busStatus">Status</label>
+        <select id="busStatus">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="MAINTENANCE">MAINTENANCE</option>
+        </select>
+
+        <button type="submit" id="saveBusButton">Add Bus</button>
+        <button type="button" id="cancelBusButton">Clear</button>
+    </form>
+
+    <p id="busMessage" role="status"></p>
+
+    <h3>Existing Buses</h3>
+    <button type="button" id="loadBusesButton">Refresh Buses</button>
+
+    <div style="overflow-x:auto">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Bus Number</th>
+                    <th>Capacity</th>
+                    <th>Driver</th>
+                    <th>Contact</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="busManagementTable">
+                <tr>
+                    <td colspan="7">Loading buses...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+  <section class="stats">
+    <div class="stat">
+      <span>Total routes</span>
+      <strong id="routeCount">—</strong>
+      <div id="routeStatus" class="status">
+        <span id="routeDot" class="dot"></span>
+        <span>Connecting to routes endpoint…</span>
+      </div>
+    </div>
+
+    <div class="stat">
+      <span>Simulated buses</span>
+      <strong id="busCount">—</strong>
+      <div id="busStatus" class="status">
+        <span id="busDot" class="dot"></span>
+        <span>Connecting to buses endpoint…</span>
+      </div>
+    </div>
+
+    <div class="stat">
+      <span>Last successful refresh</span>
+      <strong id="lastUpdate" style="font-size:19px">Not yet</strong>
+      <div class="status">
+        <span class="dot ok"></span>
+        <span>Refresh to check the latest backend data.</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Route management overview</h2>
+    <p class="small">
+      This table reads route data from the existing GET /routes endpoint.
+      It does not change your database.
+    </p>
+
+    <div class="toolbar">
+      <input id="routeSearch" type="search"
+             placeholder="Search route, location or bus number"
+             aria-label="Search routes">
+      <button id="refreshButton" type="button">Refresh data</button>
+    </div>
+
+    <div id="routeError" class="empty" hidden></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Starting point</th>
+            <th>Destination</th>
+            <th>Departure</th>
+            <th>Bus number</th>
+          </tr>
+        </thead>
+        <tbody id="routeTable">
+          <tr><td colspan="5">Loading routes…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel section">
+    <h2>Simulated bus overview</h2>
+    <p class="small">
+      This section reads GET /api/simulated-buses. Coordinates may change
+      when the endpoint is requested.
+    </p>
+
+    <div id="busError" class="empty" hidden></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Bus number</th>
+            <th>Route</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Location type</th>
+          </tr>
+        </thead>
+        <tbody id="busTable">
+          <tr><td colspan="5">Loading simulated buses…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="toolbar">
+      <a href="bus-tracking.html">
+        <button type="button">Open tracking map</button>
+      </a>
+      <a href="student-dashboard.html">
+        <button class="secondary" type="button">Open student dashboard</button>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer>TransitTrack · College Bus Tracking Project · Read-only admin demonstration</footer>
+
+<script src="js/common.js"></script>
+<script>
+  requireUser('ADMIN');
+  document.getElementById('logout').onclick = async e => {
+    e.preventDefault();
+    try { await api('/auth/logout', { method: 'POST' }); } catch (x) {}
+    location.href = 'login.html';
+  };
+</script>
+<script>
+  "use strict";
+  const ROUTES_URL
+
+  const ROUTES_URL = "/routes";
+  const BUSES_URL = "/api/simulated-buses";
+
+  const $ = (id) => document.getElementById(id);
+
+  let routes = [];
+  let buses = [];
+  let routesLoaded = false;
+  let busesLoaded = false;
+
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
+  }
+
+  function firstValue(object, keys, fallback = "Not provided") {
+    for (const key of keys) {
+      const value = object && object[key];
+      if (value !== undefined && value !== null && String(value).trim() !== "") {
+        return value;
+      }
+    }
+    return fallback;
+  }
+
+  function routeName(route, index) {
+    return firstValue(
+      route,
+      ["routeName", "name", "route", "title", "routeNumber", "routeId", "id"],
+      "Route " + (index + 1)
+    );
+  }
+
+  function routeStart(route) {
+    return firstValue(
+      route,
+      ["startLocation", "source", "fromLocation", "startPoint", "origin", "sourceLocation"],
+      "Not provided"
+    );
+  }
+
+  function routeEnd(route) {
+    return firstValue(
+      route,
+      ["endLocation", "destination", "toLocation", "endPoint", "destinationLocation"],
+      "Not provided"
+    );
+  }
+
+  function routeTime(route) {
+    return firstValue(
+      route,
+      ["departureTime", "startTime", "time", "arrivalTime"],
+      "Not provided"
+    );
+  }
+
+  function routeBus(route) {
+    return firstValue(
+      route,
+      ["busNumber", "vehicleNumber", "registrationNumber", "busNo"],
+      "Not assigned"
+    );
+  }
+
+  async function fetchArray(url) {
+    const response = await fetch(url, {
+      headers: { "Accept": "application/json" }
+    });
+
+    if (!response.ok) {
+      throw new Error("HTTP " + response.status + " from " + url);
+    }
+
+    const data = await response.json();
+
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.content)) return data.content;
+    if (data && Array.isArray(data.data)) return data.data;
+
+    throw new Error("Unexpected response format from " + url);
+  }
+
+  function setStatus(statusId, dotId, message, state) {
+    $(statusId).lastElementChild.textContent = message;
+    $(dotId).className = "dot" + (state ? " " + state : "");
+  }
+
+  function renderRoutes() {
+    $("routeCount").textContent = String(routes.length);
+
+    const query = $("routeSearch").value.trim().toLowerCase();
+
+    const filtered = routes
+      .map((route, index) => ({ route, index }))
+      .filter(({ route, index }) => {
+        const text = [
+          routeName(route, index),
+          routeStart(route),
+          routeEnd(route),
+          routeTime(route),
+          routeBus(route)
+        ].join(" ").toLowerCase();
+
+        return text.includes(query);
+      });
+
+    $("routeTable").innerHTML = filtered.length
+      ? filtered.map(({ route, index }) => `
+          <tr>
+            <td><strong>${escapeHtml(routeName(route, index))}</strong></td>
+            <td>${escapeHtml(routeStart(route))}</td>
+            <td>${escapeHtml(routeEnd(route))}</td>
+            <td>${escapeHtml(routeTime(route))}</td>
+            <td>${escapeHtml(routeBus(route))}</td>
+          </tr>
+        `).join("")
+      : '<tr><td colspan="5">No matching routes found.</td></tr>';
+
+    if (routesLoaded) {
+      setStatus(
+        "routeStatus",
+        "routeDot",
+        "Connected · " + routes.length + " route(s)",
+        "ok"
+      );
+      $("routeError").hidden = true;
+    }
+  }
+
+  function busNumber(bus, index) {
+    return firstValue(bus, ["busNumber", "vehicleNumber", "busNo", "id"], "Demo bus " + (index + 1));
+  }
+
+  function busRoute(bus) {
+    return firstValue(bus, ["route", "routeName", "routeNumber"], "Not provided");
+  }
+
+  function renderBuses() {
+    $("busCount").textContent = String(buses.length);
+
+    $("busTable").innerHTML = buses.length
+      ? buses.map((bus, index) => {
+          const lat = bus.latitude ?? bus.lat;
+          const lng = bus.longitude ?? bus.lng ?? bus.lon;
+          const coordinatesValid =
+            lat !== undefined && lng !== undefined &&
+            Number.isFinite(Number(lat)) && Number.isFinite(Number(lng));
+
+          return `
+            <tr>
+              <td><strong>${escapeHtml(busNumber(bus, index))}</strong></td>
+              <td>${escapeHtml(busRoute(bus))}</td>
+              <td>${coordinatesValid ? escapeHtml(Number(lat).toFixed(5)) : "Unavailable"}</td>
+              <td>${coordinatesValid ? escapeHtml(Number(lng).toFixed(5)) : "Unavailable"}</td>
+              <td><span class="tag">SIMULATED</span></td>
+            </tr>
+          `;
+        }).join("")
+      : '<tr><td colspan="5">No simulated buses returned.</td></tr>';
+
+    if (busesLoaded) {
+      setStatus(
+        "busStatus",
+        "busDot",
+        "Connected · " + buses.length + " simulated bus(es)",
+        "ok"
+      );
+      $("busError").hidden = true;
+    }
+  }
+
+  async function loadRoutes() {
+    try {
+      routes = await fetchArray(ROUTES_URL);
+      routesLoaded = true;
+      renderRoutes();
+    } catch (error) {
+      $("routeCount").textContent = "—";
+      $("routeError").hidden = false;
+      $("routeError").textContent =
+        "Could not load routes: " + error.message +
+        ". Check that your Spring Boot backend is running on port 8080.";
+      $("routeTable").innerHTML =
+        '<tr><td colspan="5">Route data unavailable.</td></tr>';
+
+      setStatus("routeStatus", "routeDot", "Connection failed", "error");
+    }
+  }
+
+  async function loadBuses() {
+    try {
+      buses = await fetchArray(BUSES_URL);
+      busesLoaded = true;
+      renderBuses();
+    } catch (error) {
+      $("busCount").textContent = "—";
+      $("busError").hidden = false;
+      $("busError").textContent =
+        "Could not load simulated buses: " + error.message +
+        ". Check your backend and simulated-bus endpoint.";
+      $("busTable").innerHTML =
+        '<tr><td colspan="5">Simulated bus data unavailable.</td></tr>';
+
+      setStatus("busStatus", "busDot", "Connection failed", "error");
+    }
+  }
+
+  async function refreshDashboard() {
+    $("refreshButton").disabled = true;
+    $("refreshButton").textContent = "Refreshing…";
+
+    await Promise.all([loadRoutes(), loadBuses()]);
+
+    if (routesLoaded || busesLoaded) {
+      $("lastUpdate").textContent = new Date().toLocaleTimeString();
+    }
+
+    $("refreshButton").disabled = false;
+    $("refreshButton").textContent = "Refresh data";
+  }
+
+  $("routeSearch").addEventListener("input", renderRoutes);
+ 
+const busForm = document.getElementById("busForm");
+const busTable = document.getElementById("busManagementTable");
+const busMessage = document.getElementById("busMessage");
+const saveBusButton = document.getElementById("saveBusButton");
+
+const busApi = "/admin/buses";
+
+async function loadManagedBuses() {
+    busMessage.textContent = "Loading buses...";
+
+    try {
+        const response = await fetch(busApi, {
+    credentials: "include"
+});
+
+        if (!response.ok) {
+            throw new Error("Could not load buses. HTTP " + response.status);
+        }
+
+        const buses = await response.json();
+        busTable.replaceChildren();
+
+        if (buses.length === 0) {
+            busTable.innerHTML =
+                '<tr><td colspan="7">No buses found.</td></tr>';
+        }
+
+        buses.forEach(bus => {
+            const tr = document.createElement("tr");
+
+            const values = [
+                bus.busId,
+                bus.busNumber,
+                bus.capacity ?? "",
+                bus.driverName ?? "",
+                bus.driverContact ?? "",
+                bus.status ?? ""
+            ];
+
+            values.forEach(value => {
+                const td = document.createElement("td");
+                td.textContent = value;
+                tr.appendChild(td);
+            });
+
+            const actions = document.createElement("td");
+
+            const editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.type = "button";
+            editButton.addEventListener("click", () => {
+                document.getElementById("busId").value = bus.busId;
+                document.getElementById("busNumber").value = bus.busNumber ?? "";
+                document.getElementById("capacity").value = bus.capacity ?? "";
+                document.getElementById("driverName").value = bus.driverName ?? "";
+                document.getElementById("driverContact").value =
+                    bus.driverContact ?? "";
+                document.getElementById("busStatus").value =
+                    bus.status ?? "ACTIVE";
+
+                saveBusButton.textContent = "Update Bus";
+                busMessage.textContent = "Editing bus " + bus.busNumber;
+                busForm.scrollIntoView({ behavior: "smooth" });
+            });
+
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.type = "button";
+            deleteButton.addEventListener("click", async () => {
+                if (!confirm("Delete bus " + bus.busNumber + "?")) return;
+
+                try {
+    const result = await fetch(busApi + "/" + bus.busId, {
+        method: "DELETE",
+        credentials: "include"
+    });
+
+    if (!result.ok) {
+        throw new Error("Delete failed. HTTP " + result.status);
+    }
+
+    busMessage.textContent = "Bus deleted successfully.";
+    await loadManagedBuses();
+} catch (error) {
+    busMessage.textContent = error.message;
+}
+            });
+
+            actions.append(editButton, deleteButton);
+            tr.appendChild(actions);
+            busTable.appendChild(tr);
+        });
+
+        busMessage.textContent = "Connected · " + buses.length + " bus(es)";
+    } catch (error) {
+        busMessage.textContent =
+            "Could not load buses: " + error.message;
+    }
+}
+
+busForm.addEventListener("submit", async event => {
+    event.preventDefault();
+
+    const id = document.getElementById("busId").value;
+
+    const bus = {
+        busNumber: document.getElementById("busNumber").value.trim(),
+        capacity: Number(document.getElementById("capacity").value),
+        driverName: document.getElementById("driverName").value.trim(),
+        driverContact: document.getElementById("driverContact").value.trim(),
+        status: document.getElementById("busStatus").value
+    };
+
+    if (!bus.busNumber || bus.capacity < 1) {
+        busMessage.textContent = "Enter a bus number and valid capacity.";
+        return;
+    }
+
+    saveBusButton.disabled = true;
+    busMessage.textContent = "Saving bus...";
+
+    try {
+        const response = await fetch(id ? busApi + "/" + id : busApi, {
+            method: id ? "PUT" : "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(bus)
+        });
+
+        if (!response.ok) {
+            throw new Error("Save failed. HTTP " + response.status);
+        }
+
+        busMessage.textContent = id
+            ? "Bus updated successfully."
+            : "Bus added successfully.";
+
+        busForm.reset();
+        document.getElementById("busId").value = "";
+        saveBusButton.textContent = "Add Bus";
+
+        await loadManagedBuses();
+    } catch (error) {
+        busMessage.textContent =
+            "Could not save bus: " + error.message;
+    } finally {
+        saveBusButton.disabled = false;
+    }
+});
+
+document.getElementById("cancelBusButton").addEventListener("click", () => {
+    busForm.reset();
+    document.getElementById("busId").value = "";
+    saveBusButton.textContent = "Add Bus";
+    busMessage.textContent = "";
+});
+
+document.getElementById("loadBusesButton").addEventListener(
+    "click",
+    loadManagedBuses
+);
+
+loadManagedBuses();
+
+  $("refreshButton").addEventListener("click", refreshDashboard);
+
+  refreshDashboard();
+</script>
+</body>
+</html>
+

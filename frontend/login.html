@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="js/config.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | TransitTrack</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      background: #f3f7f5;
+      color: #183b38;
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: white;
+      padding: 32px;
+      border-radius: 18px;
+      box-shadow: 0 10px 35px #163b3815;
+    }
+    .brand { font-size: 25px; font-weight: bold; color: #087f72; }
+    h1 { margin: 26px 0 8px; }
+    .subtitle { color: #637571; line-height: 1.5; }
+    label { display: block; margin: 18px 0 7px; font-weight: bold; }
+    input {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #cbd8d4;
+      border-radius: 9px;
+      font-size: 16px;
+    }
+    input:focus { outline: 2px solid #83c9bd; border-color: #087f72; }
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px;
+      border: 0;
+      border-radius: 9px;
+      background: #087f72;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .65; cursor: wait; }
+    #message {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+    .error { display: block !important; background: #fff0ef; color: #a12620; }
+    .success { display: block !important; background: #e8f7ef; color: #17663b; }
+    .links { margin-top: 20px; text-align: center; line-height: 1.8; }
+    a { color: #087f72; }
+    .note { margin-top: 22px; font-size: 12px; color: #687974; text-align: center; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">TransitTrack</div>
+    <h1>Welcome back</h1>
+    <p class="subtitle">Sign in to access your student bus dashboard.</p>
+
+    <form id="loginForm">
+      <label for="email">Email address</label>
+      <input id="email" name="email" type="email"
+             placeholder="you@example.com" autocomplete="email" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password"
+             placeholder="Enter your password"
+             autocomplete="current-password" required>
+
+      <button id="loginButton" type="submit">Login</button>
+      <div id="message" role="alert" aria-live="polite"></div>
+    </form>
+
+    <div class="links">
+      Don't have an account?
+      <a href="signup.html">Create an account</a>
+      <br>
+      <a href="index.html">Back to home</a>
+    </div>
+
+    <p class="note">TransitTrack · Student Bus Information</p>
+  </main>
+
+  <script>
+    const API_URL = "/auth/login";
+
+    const form = document.getElementById("loginForm");
+    const button = document.getElementById("loginButton");
+    const message = document.getElementById("message");
+
+    form.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      message.className = "";
+      message.textContent = "";
+      message.style.display = "none";
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+
+      button.disabled = true;
+      button.textContent = "Signing in...";
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(
+            response.status === 401
+              ? "Incorrect email or password. Please try again."
+              : (data.detail || data.message ||
+                 data.error || "Login failed. HTTP " + response.status)
+          );
+        }
+
+        if (!data.userId) {
+          throw new Error(
+            "The server responded, but user details were missing. Check the backend login response."
+          );
+        }
+
+        message.textContent = "Login successful! Opening your dashboard...";
+        message.className = "success";
+
+        const params = new URLSearchParams({
+          name: data.name || "",
+          userId: String(data.userId),
+          email: data.email || email,
+          role: data.role || "STUDENT"
+        });
+
+                window.location.assign(
+            data.role === "ADMIN" ? "admin-console.html" : "student-dashboard.html"
+        );
+
+      } catch (error) {
+        message.textContent =
+          error instanceof TypeError
+            ? "Cannot connect to the backend. Check that Spring Boot is running on port 8080."
+            : error.message;
+
+        message.className = "error";
+        button.disabled = false;
+        button.textContent = "Login";
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,522 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="js/config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransitTrack | College Routes</title>
+
+    <style>
+        :root {
+            --primary: #176f61;
+            --primary-dark: #11574d;
+            --background: #faf8f0;
+            --surface: #ffffff;
+            --text: #193d39;
+            --muted: #71817c;
+            --border: #e4eae5;
+            --success-bg: #e7f6ed;
+            --success: #187347;
+            --error-bg: #fff0ee;
+            --error: #b42318;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        nav {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            color: var(--primary);
+            font-size: 26px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 22px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 22px 45px;
+        }
+
+        .eyebrow {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 8px 0;
+            font-size: clamp(28px, 4vw, 40px);
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-bottom: 26px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 22px;
+            box-shadow: 0 8px 28px rgba(24, 61, 53, 0.05);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 21px;
+            margin: 0;
+        }
+
+        .button {
+            background: var(--primary);
+            color: white;
+            border: 0;
+            border-radius: 9px;
+            padding: 11px 17px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .button:hover {
+            background: var(--primary-dark);
+        }
+
+        .button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 22px;
+        }
+
+        .summary-card {
+            background: var(--surface);
+            padding: 19px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+        }
+
+        .summary-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .summary-value {
+            font-size: 27px;
+            font-weight: 800;
+            margin-top: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .status {
+            padding: 12px 15px;
+            border-radius: 9px;
+            margin: 15px 0;
+            background: #f0f3f1;
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .status.success {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .status.error {
+            background: var(--error-bg);
+            color: var(--error);
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 720px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 15px 13px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        th {
+            background: #f2f5ef;
+            color: #31564e;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            white-space: nowrap;
+        }
+
+        td {
+            font-size: 14px;
+        }
+
+        tbody tr:hover {
+            background: #fbfcf9;
+        }
+
+        .bus-number {
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: var(--success-bg);
+            color: var(--success);
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 32px 15px;
+            color: var(--muted);
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            padding: 25px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 650px) {
+            nav {
+                padding: 14px 18px;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            main {
+                margin-top: 24px;
+                padding: 0 14px 30px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a class="brand" href="index.html">TransitTrack</a>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a class="active" href="routes.html">Routes</a>
+            <a href="student-dashboard.html">Student Dashboard</a>
+            <a href="tracking.html">Bus Tracking</a>
+            <a href="login.html">Login</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="eyebrow">College Transportation</div>
+        <h1>College Bus Routes</h1>
+        <p class="subtitle">
+            View available buses, destinations, departure times, and route details.
+        </p>
+
+        <section class="summary">
+            <div class="summary-card">
+                <div class="summary-label">Routes displayed</div>
+                <div class="summary-value" id="routeCount">—</div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-label">Active buses</div>
+                <div class="summary-value" id="activeCount">—</div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-label">College destination</div>
+                <div class="summary-value" style="font-size:19px">
+                    Anurag University
+                </div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Available Routes</h2>
+                <button class="button" id="refreshButton" onclick="loadRoutes()">
+                    ↻ Refresh Routes
+                </button>
+            </div>
+
+            <div id="status" class="status" role="status" aria-live="polite">
+                Loading route information...
+            </div>
+
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Route ID</th>
+                            <th>Bus Number</th>
+                            <th>Capacity</th>
+                            <th>Driver</th>
+                            <th>Destination</th>
+                            <th>Departure</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="routeBody">
+                        <tr>
+                            <td colspan="7" class="empty">
+                                Loading routes...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        TransitTrack · College Transportation Management System
+    </footer>
+
+    <script>
+        const API_URL = "/routes";
+
+        const statusElement = document.getElementById("status");
+        const routeBody = document.getElementById("routeBody");
+        const refreshButton = document.getElementById("refreshButton");
+
+        function safeText(value) {
+            return String(value ?? "—")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function firstValue(object, keys, fallback = "—") {
+            for (const key of keys) {
+                if (object && object[key] !== undefined &&
+                    object[key] !== null && object[key] !== "") {
+                    return object[key];
+                }
+            }
+            return fallback;
+        }
+
+        function formatTime(value) {
+            if (value === null || value === undefined || value === "") {
+                return "—";
+            }
+
+            const text = String(value);
+
+            // Preserve times such as 09:00 AM or 09:00:00.
+            return text;
+        }
+
+        function normalizeRoute(route) {
+            // Some route responses contain the bus as a nested object.
+            // Others return bus fields directly.
+            const bus = route.bus && typeof route.bus === "object"
+                ? route.bus
+                : route;
+
+            return {
+                id: firstValue(route, ["routeId", "id"]),
+                busNumber: firstValue(bus, [
+                    "busNumber", "busNo", "registrationNumber"
+                ]),
+                capacity: firstValue(bus, ["capacity", "seatingCapacity"]),
+                driver: firstValue(bus, ["driverName", "driver"]),
+                destination: firstValue(route, [
+                    "endPoint", "destination", "to", "routeName"
+                ], "Anurag University"),
+                departure: formatTime(firstValue(route, [
+                    "startTime", "departureTime", "endTime"
+                ])),
+                status: firstValue(bus, ["status"], "UNKNOWN")
+            };
+        }
+
+        function showMessage(message, type = "") {
+            statusElement.className = "status" + (type ? " " + type : "");
+            statusElement.textContent = message;
+        }
+
+        async function loadRoutes() {
+            refreshButton.disabled = true;
+            refreshButton.textContent = "Loading...";
+            showMessage("Connecting to the TransitTrack backend...");
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "GET",
+                    headers: { "Accept": "application/json" },
+                    credentials: "include"
+                });
+
+                if (!response.ok) {
+                    throw new Error("HTTP " + response.status +
+                        " returned by the routes API.");
+                }
+
+                const data = await response.json();
+
+                // Accept either a list or a single route object.
+                const routes = Array.isArray(data)
+                    ? data
+                    : data && Array.isArray(data.content)
+                        ? data.content
+                        : data && Array.isArray(data.routes)
+                            ? data.routes
+                            : data && typeof data === "object"
+                                ? [data]
+                                : [];
+
+                if (routes.length === 0) {
+                    routeBody.innerHTML =
+                        '<tr><td colspan="7" class="empty">' +
+                        'No route records are available yet.</td></tr>';
+
+                    document.getElementById("routeCount").textContent = "0";
+                    document.getElementById("activeCount").textContent = "0";
+                    showMessage("Connected successfully, but no routes were returned.",
+                        "success");
+                    return;
+                }
+
+                const normalized = routes.map(normalizeRoute);
+
+                routeBody.innerHTML = normalized.map(route => {
+                    const active = String(route.status).toUpperCase() !== "DELAYED";
+
+                    return `
+                        <tr>
+                            <td>${safeText(route.id)}</td>
+                            <td class="bus-number">${safeText(route.busNumber)}</td>
+                            <td>${safeText(route.capacity)}</td>
+                            <td>${safeText(route.driver)}</td>
+                            <td>${safeText(route.destination)}</td>
+                            <td>${safeText(route.departure)}</td>
+                            <td><span class="badge"
+                                style="${active ? "" : "background:#f1f1f1;color:#666"}">
+                                ${safeText(route.status)}
+                            </span></td>
+                        </tr>`;
+                }).join("");
+
+                document.getElementById("routeCount").textContent =
+                    normalized.length;
+
+                document.getElementById("activeCount").textContent =
+                    normalized.filter(route =>
+                        String(route.status).toUpperCase() !== "DELAYED"
+                    ).length;
+
+                showMessage(
+                    "Routes loaded successfully. " +
+                    normalized.length + " record(s) found.",
+                    "success"
+                );
+
+            } catch (error) {
+                routeBody.innerHTML =
+                    '<tr><td colspan="7" class="empty">' +
+                    'Unable to load route information.</td></tr>';
+
+                document.getElementById("routeCount").textContent = "—";
+                document.getElementById("activeCount").textContent = "—";
+
+                showMessage(
+                    error.message +
+                    " Check that Spring Boot is running on port 8080 and that /routes is accessible.",
+                    "error"
+                );
+
+                console.error("TransitTrack routes error:", error);
+            } finally {
+                refreshButton.disabled = false;
+                refreshButton.textContent = "↻ Refresh Routes";
+            }
+        }
+
+        loadRoutes();
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="js/config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransitTrack | Bus Tracking</title>
+
+    <!-- Leaflet map library -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+        :root {
+            --green: #176f61;
+            --dark-green: #11574d;
+            --background: #faf8f0;
+            --text: #193d39;
+            --muted: #71817c;
+            --border: #e4eae5;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        nav {
+            background: var(--white);
+            padding: 15px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            color: var(--green);
+            font-size: 26px;
+            font-weight: 800;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--green);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 20px 45px;
+        }
+
+        .eyebrow {
+            color: var(--green);
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+        }
+
+        h1 {
+            font-size: clamp(28px, 4vw, 40px);
+            margin: 8px 0;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .summary-card {
+            background: var(--white);
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+        }
+
+        .summary-label {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .summary-value {
+            font-size: 28px;
+            font-weight: 800;
+            margin-top: 5px;
+            overflow-wrap: anywhere;
+        }
+
+        .card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 15px;
+            padding: 23px;
+            margin-top: 22px;
+            box-shadow: 0 7px 25px rgba(25, 61, 57, 0.04);
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            border: 0;
+            border-radius: 9px;
+            padding: 12px 17px;
+            background: var(--green);
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: var(--dark-green);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .status {
+            background: #f1f4f0;
+            padding: 13px 15px;
+            border-radius: 9px;
+            margin: 18px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
+
+        .status.success {
+            background: #e7f6ed;
+            color: #187347;
+        }
+
+        .status.error {
+            background: #fff0ee;
+            color: #b42318;
+        }
+
+        #map {
+            height: 430px;
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: #edf2eb;
+            z-index: 1;
+        }
+
+        .map-note {
+            color: var(--muted);
+            font-size: 13px;
+            margin: 12px 0 0;
+        }
+
+        .bus-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .bus-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px;
+        }
+
+        .bus-card h3 {
+            margin: 0 0 10px;
+            font-size: 19px;
+            color: var(--green);
+        }
+
+        .bus-meta {
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.9;
+            overflow-wrap: anywhere;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            background: #e7f6ed;
+            color: #187347;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .empty {
+            color: var(--muted);
+            text-align: center;
+            padding: 28px 10px;
+            grid-column: 1 / -1;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            padding: 25px;
+            font-size: 13px;
+        }
+
+        @media (max-width: 700px) {
+            nav {
+                padding: 14px 18px;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            main {
+                padding: 0 14px 30px;
+                margin-top: 24px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .bus-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            #map {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a class="brand" href="index.html">TransitTrack</a>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="routes.html">Routes</a>
+            <a href="student-dashboard.html">Student Dashboard</a>
+            <a class="active" href="tracking.html">Bus Tracking</a>
+            <a href="login.html">Login</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="eyebrow">COLLEGE TRANSPORTATION</div>
+        <h1>Bus Tracking</h1>
+        <p class="subtitle">
+            View registered buses and their available location information.
+        </p>
+
+        <section class="summary">
+            <div class="summary-card">
+                <div class="summary-label">Registered buses</div>
+                <div class="summary-value" id="busCount">—</div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-label">Active buses</div>
+                <div class="summary-value" id="activeCount">—</div>
+            </div>
+
+            <div class="summary-card">
+                <div class="summary-label">Mapped locations</div>
+                <div class="summary-value" id="mappedCount">0</div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="toolbar">
+                <h2>Live Map</h2>
+                <button id="refreshButton" type="button">
+                    ↻ Refresh Buses
+                </button>
+            </div>
+
+            <div id="status" class="status" role="status" aria-live="polite">
+                Initializing map...
+            </div>
+
+            <div id="map" aria-label="Interactive bus tracking map"></div>
+
+            <p id="locationMessage" class="map-note">
+                Loading bus locations...
+            </p>
+        </section>
+
+        <section class="card">
+            <h2>Registered Buses</h2>
+            <p class="subtitle">
+                Bus information received from the backend.
+            </p>
+
+            <div id="busGrid" class="bus-grid">
+                <div class="empty">Loading buses...</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        TransitTrack · College Transportation Management System
+    </footer>
+
+    <!-- Load Leaflet before initializing the map -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        const API_URL = "/api/simulated-buses";
+
+        const statusBox = document.getElementById("status");
+        const busGrid = document.getElementById("busGrid");
+        const refreshButton = document.getElementById("refreshButton");
+        const locationMessage = document.getElementById("locationMessage");
+
+        function escapeHTML(value) {
+            return String(value ?? "—")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function getValue(object, keys, fallback = "—") {
+            for (const key of keys) {
+                if (
+                    object &&
+                    object[key] !== undefined &&
+                    object[key] !== null &&
+                    object[key] !== ""
+                ) {
+                    return object[key];
+                }
+            }
+
+            return fallback;
+        }
+
+        function normalizeBus(item) {
+            const bus = item.bus && typeof item.bus === "object"
+                ? item.bus
+                : item;
+
+            const rawLatitude = getValue(
+                item, ["latitude", "lat"],
+                getValue(bus, ["latitude", "lat"], null)
+            );
+
+            const rawLongitude = getValue(
+                item, ["longitude", "lng", "lon"],
+                getValue(bus, ["longitude", "lng", "lon"], null)
+            );
+
+            const latitude = rawLatitude === null
+                ? null : Number(rawLatitude);
+
+            const longitude = rawLongitude === null
+                ? null : Number(rawLongitude);
+
+            return {
+                id: getValue(item, ["busId", "id"],
+                    getValue(bus, ["busId", "id"])),
+                number: getValue(bus, [
+                    "busNumber", "busNo", "registrationNumber"
+                ]),
+                driver: getValue(bus, ["driverName", "driver"]),
+                capacity: getValue(bus, ["capacity", "seatingCapacity"]),
+                status: getValue(bus, ["status"], "UNKNOWN"),
+                latitude,
+                longitude
+            };
+        }
+
+        function showStatus(message, type = "") {
+            statusBox.className = "status" + (type ? " " + type : "");
+            statusBox.textContent = message;
+        }
+
+        // Create the map only if Leaflet loaded successfully.
+        let map = null;
+        let mapAvailable = false;
+        let busMarkers = [];
+
+        if (window.L) {
+            map = L.map("map").setView([17.3850, 78.4867], 11);
+
+            L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    maxZoom: 19,
+                    attribution: "&copy; OpenStreetMap contributors"
+                }
+            ).addTo(map);
+
+            mapAvailable = true;
+
+            setTimeout(() => map.invalidateSize(), 200);
+        } else {
+            document.getElementById("map").innerHTML =
+                '<p style="padding:20px;color:#b42318">' +
+                'The map library could not load. Check your internet connection and reload this page.' +
+                '</p>';
+
+            showStatus(
+                "Map library unavailable. Connect to the internet and reload.",
+                "error"
+            );
+        }
+
+        function clearBusMarkers() {
+            if (map) {
+                busMarkers.forEach(marker => map.removeLayer(marker));
+            }
+
+            busMarkers = [];
+        }
+
+        function addBusMarker(bus) {
+            if (!mapAvailable) {
+                return false;
+            }
+
+            const lat = bus.latitude;
+            const lng = bus.longitude;
+
+            if (
+                !Number.isFinite(lat) ||
+                !Number.isFinite(lng) ||
+                lat < -90 || lat > 90 ||
+                lng < -180 || lng > 180
+            ) {
+                return false;
+            }
+
+            const popupContent =
+                "<strong>Bus: " + escapeHTML(bus.number) + "</strong><br>" +
+                "Driver: " + escapeHTML(bus.driver) + "<br>" +
+                "Status: " + escapeHTML(bus.status);
+
+            const marker = L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup(popupContent);
+
+            busMarkers.push(marker);
+            return true;
+        }
+
+        async function loadBuses() {
+            refreshButton.disabled = true;
+            refreshButton.textContent = "Loading...";
+
+            showStatus("Connecting to the bus tracking service...");
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    },
+                    credentials: "include"
+                });
+
+                if (!response.ok) {
+                    throw new Error(
+                        "HTTP " + response.status +
+                        " from the simulated-buses API."
+                    );
+                }
+
+                const data = await response.json();
+
+                const items = Array.isArray(data)
+                    ? data
+                    : data && Array.isArray(data.content)
+                        ? data.content
+                        : data && Array.isArray(data.buses)
+                            ? data.buses
+                            : data && typeof data === "object"
+                                ? [data]
+                                : [];
+
+                const buses = items.map(normalizeBus);
+
+                busGrid.innerHTML = "";
+                clearBusMarkers();
+
+                if (buses.length === 0) {
+                    busGrid.innerHTML =
+                        '<div class="empty">No bus records were returned by the API.</div>';
+
+                    document.getElementById("busCount").textContent = "0";
+                    document.getElementById("activeCount").textContent = "0";
+                    document.getElementById("mappedCount").textContent = "0";
+
+                    locationMessage.textContent =
+                        "No bus coordinates are available.";
+
+                    showStatus(
+                        "Connected to the API, but no buses were returned.",
+                        "success"
+                    );
+
+                    return;
+                }
+
+                busGrid.innerHTML = buses.map(bus => {
+                    const active =
+                        String(bus.status).toUpperCase() === "ACTIVE";
+
+                    return `
+                        <article class="bus-card">
+                            <h3>🚌 ${escapeHTML(bus.number)}</h3>
+                            <div class="bus-meta">
+                                <div><strong>Bus ID:</strong> ${escapeHTML(bus.id)}</div>
+                                <div><strong>Driver:</strong> ${escapeHTML(bus.driver)}</div>
+                                <div><strong>Capacity:</strong> ${escapeHTML(bus.capacity)}</div>
+                            </div>
+                            <span class="badge"
+                                style="${active ? "" : "background:#f1f1f1;color:#666"}">
+                                ${escapeHTML(bus.status)}
+                            </span>
+                        </article>
+                    `;
+                }).join("");
+
+                let mapped = 0;
+
+                buses.forEach(bus => {
+                    if (addBusMarker(bus)) {
+                        mapped++;
+                    }
+                });
+
+                document.getElementById("busCount").textContent =
+                    String(buses.length);
+
+                document.getElementById("activeCount").textContent =
+                    String(buses.filter(bus =>
+                        String(bus.status).toUpperCase() === "ACTIVE"
+                    ).length);
+
+                document.getElementById("mappedCount").textContent =
+                    String(mapped);
+
+                if (mapped > 0) {
+                    const bounds = L.featureGroup(busMarkers).getBounds();
+
+                    map.fitBounds(bounds, {
+                        padding: [30, 30],
+                        maxZoom: 15
+                    });
+
+                    locationMessage.textContent =
+                        mapped + " bus marker(s) shown from the coordinates returned by the API. " +
+                        "Their accuracy and whether they are live GPS positions are not verified.";
+
+                    showStatus(
+                        "Loaded " + buses.length + " bus record(s) and mapped " +
+                        mapped + " location(s).",
+                        "success"
+                    );
+                } else {
+                    locationMessage.textContent =
+                        "No valid latitude and longitude were returned. " +
+                        "The map is centered on Hyderabad until bus coordinates become available.";
+
+                    showStatus(
+                        "Loaded " + buses.length +
+                        " bus record(s). No valid bus coordinates were returned.",
+                        "success"
+                    );
+                }
+
+                if (map) {
+                    setTimeout(() => map.invalidateSize(), 100);
+                }
+
+            } catch (error) {
+                busGrid.innerHTML =
+                    '<div class="empty">Could not load bus information.</div>';
+
+                document.getElementById("busCount").textContent = "—";
+                document.getElementById("activeCount").textContent = "—";
+                document.getElementById("mappedCount").textContent = "0";
+
+                locationMessage.textContent =
+                    "Location markers require valid coordinates from the tracking API.";
+
+                showStatus(
+                    error.message +
+                    " Make sure the Spring Boot backend is running on port 8080.",
+                    "error"
+                );
+
+                console.error("TransitTrack tracking error:", error);
+            } finally {
+                refreshButton.disabled = false;
+                refreshButton.textContent = "↻ Refresh Buses";
+            }
+        }
+
+        refreshButton.addEventListener("click", loadBuses);
+
+        if (mapAvailable) {
+            loadBuses();
+        }
+    </script>
+</body>
+</html>
+

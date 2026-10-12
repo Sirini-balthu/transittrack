@@ -1,0 +1,427 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="js/config.js"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TransitTrack | Your college bus, always on time</title>
+<meta name="description" content="Find your college bus route and check route details.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#f5f8f7;--surface:#fff;--ink:#0b1f27;--mute:#586b74;
+  --rule:#dfe8e5;--brand:#0e7c6b;--brand-d:#0a5c50;
+  --accent:#f5a623;--ok-bg:#d6f5e6;--ok:#0b6b3a;
+  --bad-bg:#fde2df;--bad:#b42318;
+  --hero:radial-gradient(900px 500px at 85% -10%,#c9efe6 0,transparent 60%),radial-gradient(700px 400px at -10% 20%,#ffe9bf 0,transparent 55%);
+  --shadow:0 20px 50px -20px rgba(11,31,39,.25);
+}
+@media(prefers-color-scheme:dark){
+:root{
+  --bg:#0a161b;--surface:#122229;--ink:#e9f1ef;--mute:#9bb0b8;
+  --rule:#223941;--brand:#33c2a9;--brand-d:#5ad6c0;
+  --ok-bg:#12382b;--ok:#6be3a5;--bad-bg:#3e1b19;--bad:#ff938a;
+  --hero:radial-gradient(900px 500px at 85% -10%,#0f3a38 0,transparent 60%),radial-gradient(700px 400px at -10% 20%,#33280f 0,transparent 55%);
+  --shadow:0 20px 50px -20px rgba(0,0,0,.6);
+}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.6 Figtree,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"Bricolage Grotesque",Figtree,sans-serif;line-height:1.08;margin:0;letter-spacing:-.02em}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:12px;font-weight:600;font-size:16px;text-decoration:none;border:1.5px solid transparent;transition:transform .15s,box-shadow .15s,background .15s}
+.btn:hover{transform:translateY(-2px)}
+.btn-p{background:var(--brand);color:#fff;box-shadow:0 10px 24px -10px var(--brand)}
+.btn-p:hover{background:var(--brand-d)}
+.btn-g{background:transparent;color:var(--ink);border-color:var(--rule)}
+.btn-g:hover{border-color:var(--brand)}
+.btn-s{padding:9px 16px;font-size:15px;border-radius:10px}
+@media(prefers-color-scheme:dark){.btn-p{color:#06201b}}
+header{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--rule)}
+.bar{display:flex;align-items:center;gap:28px;height:68px}
+.logo{display:flex;align-items:center;gap:10px;font:800 21px "Bricolage Grotesque",sans-serif;text-decoration:none}
+.logo i{width:34px;height:34px;border-radius:10px;background:var(--brand);display:grid;place-items:center}
+.logo svg{width:20px;height:20px;stroke:#fff}
+nav.links{display:flex;gap:24px;margin-left:12px;flex:1}
+nav.links a{text-decoration:none;color:var(--mute);font-weight:500;font-size:16px}
+nav.links a:hover{color:var(--ink)}
+.cta{display:flex;gap:10px}
+.hero{background:var(--hero);padding:72px 0 88px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--rule);padding:6px 14px 6px 10px;border-radius:99px;font-size:14px;font-weight:600;color:var(--mute);margin-bottom:22px}
+.pill b{width:9px;height:9px;border-radius:50%;background:#22c55e;animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px #22c55e00}100%{box-shadow:0 0 0 0 #22c55e00}}
+h1{font-size:clamp(40px,6.2vw,68px);font-weight:800}
+h1 em{font-style:normal;color:var(--brand);position:relative;white-space:nowrap}
+h1 em::after{content:"";position:absolute;left:0;right:0;bottom:2px;height:.14em;background:var(--accent);border-radius:99px;opacity:.85;z-index:-1}
+.lead{font-size:19px;color:var(--mute);max-width:520px;margin:22px 0 32px}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.trust{display:flex;gap:22px;flex-wrap:wrap;margin-top:34px;color:var(--mute);font-size:15px}
+.trust span::before{content:"✓";color:var(--brand);font-weight:800;margin-right:7px}
+.card3d{background:var(--surface);border:1px solid var(--rule);border-radius:24px;padding:26px;box-shadow:var(--shadow);transform:rotate(1.5deg);transition:transform .4s}
+.card3d:hover{transform:rotate(0) translateY(-4px)}
+.ch{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px}
+.ch h3{font-size:22px}
+.sub{color:var(--mute);font-size:14px}
+.badge{display:inline-block;padding:3px 12px;border-radius:99px;font-size:13px;font-weight:700;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-bad{background:var(--bad-bg);color:var(--bad)}
+.track{position:relative;margin:22px 0 8px;padding-left:34px;display:grid;gap:26px}
+.track::before{content:"";position:absolute;left:9px;top:8px;bottom:8px;width:4px;border-radius:2px;background:var(--rule)}
+.stop{position:relative;font-weight:500}
+.stop::before{content:"";position:absolute;left:-33px;top:4px;width:16px;height:16px;border-radius:50%;background:var(--surface);border:4px solid var(--brand)}
+.stop small{display:block;color:var(--mute);font-weight:400;font-size:13px}
+.busdot{position:absolute;left:0;top:0;width:22px;height:22px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 30%,transparent);animation:ride 9s ease-in-out infinite alternate}
+@keyframes ride{from{top:2px}to{top:calc(100% - 24px)}}
+.cardfoot{display:flex;justify-content:space-between;border-top:1px dashed var(--rule);margin-top:16px;padding-top:14px;font-size:14px;color:var(--mute)}
+section{padding:88px 0}
+.eyebrow{color:var(--brand);font-weight:700;font-size:14px;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+h2{font-size:clamp(30px,4.2vw,46px);font-weight:800;max-width:640px}
+.sec-sub{color:var(--mute);max-width:560px;margin:14px 0 44px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.feat{background:var(--surface);border:1px solid var(--rule);border-radius:20px;padding:26px;transition:transform .2s,box-shadow .2s,border-color .2s}
+.feat:hover{transform:translateY(-6px);box-shadow:var(--shadow);border-color:var(--brand)}
+.ico{width:48px;height:48px;border-radius:14px;background:color-mix(in srgb,var(--brand) 14%,transparent);display:grid;place-items:center;margin-bottom:18px}
+.ico svg{width:24px;height:24px;stroke:var(--brand);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.feat h3{font-size:20px;margin-bottom:8px}
+.feat p{margin:0;color:var(--mute);font-size:15.5px}
+.try{background:var(--surface);border-block:1px solid var(--rule)}
+.search{position:relative;max-width:520px;display:block}
+.search svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:20px;height:20px;stroke:var(--mute);fill:none;stroke-width:2;stroke-linecap:round}
+.search input{width:100%;font:inherit;padding:16px 18px 16px 48px;border-radius:14px;border:1.5px solid var(--rule);background:var(--bg);color:var(--ink)}
+.search input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand) 20%,transparent)}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 26px}
+.chips button{font:inherit;font-size:14px;padding:6px 14px;border-radius:99px;border:1px solid var(--rule);background:var(--bg);color:var(--mute);cursor:pointer}
+.chips button:hover{border-color:var(--brand);color:var(--ink)}
+.results{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;min-height:140px}
+.rt{background:var(--bg);border:1px solid var(--rule);border-radius:16px;padding:20px;animation:in .35s both}
+@keyframes in{from{opacity:0;transform:translateY(10px)}}
+.rt h3{font-size:18px;margin-bottom:4px}
+.rt p{margin:10px 0 0;font-size:14.5px;color:var(--mute)}
+.empty{color:var(--mute);grid-column:1/-1}
+.note{margin-top:22px;font-size:14px;color:var(--mute)}
+.note a{color:var(--brand);font-weight:600}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;counter-reset:s}
+.step{position:relative;padding:28px 26px 26px;border-radius:20px;border:1px solid var(--rule);background:var(--surface)}
+.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--brand);color:#fff;font:800 19px "Bricolage Grotesque",sans-serif;margin-bottom:16px}
+.step h3{font-size:21px;margin-bottom:8px}
+.step p{margin:0;color:var(--mute);font-size:15.5px}
+.band{margin:0 20px 80px}
+.band .in{max-width:1080px;margin:0 auto;background:linear-gradient(135deg,var(--brand),#0a4f55);color:#fff;border-radius:28px;padding:60px 28px;text-align:center;position:relative;overflow:hidden}
+.band .in::after{content:"";position:absolute;width:340px;height:340px;border-radius:50%;background:var(--accent);opacity:.18;right:-90px;top:-120px}
+.band h2{margin:0 auto 14px;color:#fff;position:relative}
+.band p{margin:0 auto 28px;max-width:480px;opacity:.9;position:relative}
+.band .btn-w{background:#fff;color:#0a4f55;position:relative}
+.band .btn-w:hover{background:#fff7e0}
+footer{border-top:1px solid var(--rule);padding:30px 0;color:var(--mute);font-size:15px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer a{text-decoration:none;margin-left:18px}
+footer a:hover{color:var(--ink)}
+.rv{opacity:0;transform:translateY(22px);transition:opacity .6s,transform .6s}
+.rv.on{opacity:1;transform:none}
+@media(max-width:980px){
+.hero .wrap{grid-template-columns:1fr}.card3d{transform:none;max-width:460px}
+.grid4{grid-template-columns:repeat(2,1fr)}.steps{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+nav.links{display:none}.bar{justify-content:space-between}
+.hero{padding:44px 0 60px}section{padding:60px 0}
+.grid4{grid-template-columns:1fr}.cta .btn-g{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+*{animation:none!important;transition:none!important}
+.rv{opacity:1;transform:none}html{scroll-behavior:auto}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="wrap bar">
+    <a class="logo" href="#home" aria-label="TransitTrack home">
+      <i><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="14" rx="3"/><path d="M4 11h16M8 21v-4M16 21v-4M8 14h.01M16 14h.01"/></svg></i>
+      TransitTrack
+    </a>
+    <nav class="links" aria-label="Main">
+      <a href="#features">Features</a>
+      <a href="#try">Try it</a>
+      <a href="#how">How it works</a>
+      <a href="bus-tracking.html">Bus tracking</a>
+    </nav>
+    <div class="cta" id="authBtns">
+      <a class="btn btn-g btn-s" href="/login.html">Log in</a>
+      <a class="btn btn-p btn-s" href="/signup.html">Sign up</a>
+    </div>
+  </div>
+</header>
+
+<main id="home">
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <div class="pill"><b></b> Built for college commuters</div>
+      <h1>Know your bus <em>before</em> it arrives.</h1>
+      <p class="lead">Search your bus route, check its scheduled timing, and find the stops you need. No more guessing at the gate.</p>
+      <div class="row">
+        <a class="btn btn-p" href="/signup.html">Get started free
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <a class="btn btn-g" href="#try">Try a route search</a>
+      </div>
+      <div class="trust">
+        <span>College email login</span>
+        <span>Admin-approved seats</span>
+        <span>Works on any phone</span>
+      </div>
+    </div>
+
+    <div class="card3d" aria-label="Illustrative route preview">
+      <div class="ch">
+        <div>
+          <h3>Route preview</h3>
+          <div class="sub">Illustration only · not connected to GPS</div>
+        </div>
+        <span class="badge b-ok">DEMO</span>
+      </div>
+      <div class="track">
+        <div class="busdot" aria-hidden="true"></div>
+        <div class="stop">Bus stop <small>Scheduled pickup</small></div>
+        <div class="stop">Main road <small>Route in progress (illustration)</small></div>
+        <div class="stop">College gate <small>Scheduled arrival</small></div>
+      </div>
+      <div class="cardfoot"><span>Route illustration</span><span>GPS not enabled</span></div>
+    </div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <div class="eyebrow">Features</div>
+    <h2 class="rv">Everything your commute needs, in one place</h2>
+    <p class="sec-sub rv">Simple for students, useful for the transport office.</p>
+    <div class="grid4">
+      <div class="feat rv"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div><h3>Search by stop</h3><p>Search existing routes by boarding stop, route name, bus number or timing.</p></div>
+      <div class="feat rv"><div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>Route timings</h3><p>View the scheduled departure times returned by your existing backend.</p></div>
+      <div class="feat rv"><div class="ico"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div><h3>Secure access</h3><p>Use your existing login system. This page does not change authentication settings.</p></div>
+      <div class="feat rv"><div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></div><h3>Admin console</h3><p>Manage transport details through your existing admin functionality.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="try" class="try">
+  <div class="wrap">
+    <div class="eyebrow">Try it</div>
+    <h2 class="rv">Where do you board?</h2>
+    <p class="sec-sub rv">Search the routes loaded from your existing database.</p>
+    <label class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" type="search" placeholder="Search Hayathnagar, Uppal, bus number…" autocomplete="off" aria-label="Search route">
+    </label>
+    <div class="chips" id="chips"></div>
+    <div class="results" id="res" aria-live="polite"></div>
+    <p class="note">Routes are loaded from your existing backend. GPS tracking is not enabled yet. <a href="/login.html">Log in</a> if your existing login page is configured.</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2 class="rv">From sign-up to seat in three steps</h2>
+    <p class="sec-sub rv">Use the pages already available in your project.</p>
+    <div class="steps">
+      <div class="step rv"><h3>Create your account</h3><p>Open the existing sign-up page if it is configured in your project.</p></div>
+      <div class="step rv"><h3>Find your route</h3><p>Search a stop, check the scheduled timing, and find the bus number.</p></div>
+      <div class="step rv"><h3>Request your seat</h3><p>Use the registration process supported by your existing backend.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="band rv">
+  <div class="in">
+    <h2>Ready to stop chasing the bus?</h2>
+    <p>Find your college route and plan your morning with confidence.</p>
+    <a class="btn btn-w" href="/signup.html">Create your account</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span>© <span id="yr"></span> TransitTrack · College Bus Route Management</span>
+    <span><a href="/login.html">Log in</a><a href="/signup.html">Sign up</a><a href="#features">Features</a></span>
+  </div>
+</footer>
+
+<script>
+/*
+  Frontend only.
+  Reads existing route records using GET /routes.
+  Does not insert, update, or delete database records.
+  No live GPS integration is included.
+*/
+var API_BASE = "";
+var q = document.getElementById("q");
+var res = document.getElementById("res");
+var chips = document.getElementById("chips");
+var allRoutes = [];
+
+function safe(value) {
+  return String(value == null ? "" : value).replace(/[&<>"']/g, function(ch) {
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
+  });
+}
+
+function getStops(route) {
+  var raw = route.stops;
+  var list = Array.isArray(raw) ? raw : String(raw || "").split(/[,;>→]+/);
+  list = list.map(function(s) { return String(s).trim(); }).filter(Boolean);
+
+  if (route.startPoint && !list.some(function(s) {
+    return s.toLowerCase() === String(route.startPoint).toLowerCase();
+  })) list.unshift(route.startPoint);
+
+  if (route.endPoint && !list.some(function(s) {
+    return s.toLowerCase() === String(route.endPoint).toLowerCase();
+  })) list.push(route.endPoint);
+
+  return list;
+}
+
+function getName(route) {
+  return route.routeName || route.name || route.routeNumber || ("Route " + (route.routeId || route.id || ""));
+}
+
+function getTime(route) {
+  return route.startTime || route.departureTime || route.departure_time || route.start_time || route.time || "Not set";
+}
+
+function getBus(route) {
+  var bus = route.bus || route.busDetails || {};
+  return bus.busNumber || route.busNumber || "Not provided";
+}
+
+function buildChips() {
+  chips.innerHTML = "";
+  var stops = [];
+
+  allRoutes.forEach(function(route) {
+    getStops(route).forEach(function(stop) {
+      if (!stops.some(function(old) {
+        return old.toLowerCase() === stop.toLowerCase();
+      })) stops.push(stop);
+    });
+  });
+
+  stops.slice(0, 8).forEach(function(stop) {
+    var button = document.createElement("button");
+    button.type = "button";
+    button.textContent = stop;
+    button.addEventListener("click", function() {
+      q.value = stop;
+      renderRoutes();
+    });
+    chips.appendChild(button);
+  });
+}
+
+function renderRoutes() {
+  var term = q.value.trim().toLowerCase();
+
+  var filtered = allRoutes.filter(function(route) {
+    var text = [
+      getName(route),
+      route.startPoint,
+      route.endPoint,
+      getTime(route),
+      getBus(route),
+      getStops(route).join(" ")
+    ].join(" ").toLowerCase();
+
+    return !term || text.indexOf(term) !== -1;
+  });
+
+  if (!filtered.length) {
+    res.innerHTML = '<p class="empty">' +
+      (allRoutes.length
+        ? 'No routes match your search. Try one of the stop buttons above.'
+        : 'No routes were returned by the backend.') +
+      '</p>';
+    return;
+  }
+
+  res.innerHTML = filtered.map(function(route, index) {
+    var status = String(route.status || "").toUpperCase();
+    var knownStatus = status && status !== "DEMO" && status !== "UNKNOWN";
+    var badgeClass = status === "DELAYED" ? "b-bad" : "b-ok";
+    var badgeText = knownStatus ? status.replace(/_/g, " ") : "DEMO · NOT LIVE";
+
+    return '<article class="rt" style="animation-delay:' + (index * 60) + 'ms">' +
+      '<div class="ch"><h3>' + safe(getName(route)) + '</h3>' +
+      '<span class="badge ' + (knownStatus ? badgeClass : '') + '">' + safe(badgeText) + '</span></div>' +
+      '<div class="sub">Departure <strong>' + safe(getTime(route)) + '</strong></div>' +
+      '<p><strong>Bus:</strong> ' + safe(getBus(route)) + '</p>' +
+      '<p>' + getStops(route).map(safe).join(' → ') + '</p>' +
+      '</article>';
+  }).join("");
+}
+
+function loadRoutes() {
+  res.innerHTML = '<p class="empty">Loading your existing routes…</p>';
+
+  fetch(API_BASE + "/routes", {
+    method: "GET",
+    headers: {"Accept": "application/json"}
+  })
+  .then(function(response) {
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    return response.json();
+  })
+  .then(function(routes) {
+    if (!Array.isArray(routes)) {
+      throw new Error("The /routes endpoint did not return a JSON list.");
+    }
+
+    allRoutes = routes;
+    buildChips();
+    renderRoutes();
+  })
+  .catch(function(error) {
+    res.innerHTML = '<p class="empty">Could not load routes. Make sure Spring Boot is running at port 8080. ' +
+      safe(error.message) +
+      '. If the browser console reports CORS, the backend must allow this frontend origin.</p>';
+  });
+}
+
+q.addEventListener("input", renderRoutes);
+document.getElementById("yr").textContent = new Date().getFullYear();
+loadRoutes();
+
+if ("IntersectionObserver" in window) {
+  var io = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("on");
+        io.unobserve(entry.target);
+      }
+    });
+  }, {threshold: 0.15});
+
+  document.querySelectorAll(".rv").forEach(function(el, index) {
+    el.style.transitionDelay = (index % 4) * 70 + "ms";
+    io.observe(el);
+  });
+} else {
+  document.querySelectorAll(".rv").forEach(function(el) {
+    el.classList.add("on");
+  });
+}
+</script>
+</body>
+</html>
+

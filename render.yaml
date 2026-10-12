@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: transittrack
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: ADMIN_EMAIL
+        value: admin@transittrack.com
+      - key: ADMIN_PASSWORD
+        sync: false

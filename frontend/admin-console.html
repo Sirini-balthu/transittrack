@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script src="js/config.js"></script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Console | TransitTrack</title>
+<link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+<div id="header"></div>
+<main>
+  <h1>Admin console</h1>
+  <p class="sub">Review requests, manage routes and push schedule changes instantly.</p>
+  <section class="stats" id="stats"></section>
+  <div class="tabs" role="tablist">
+    <button class="on" data-tab="regs" role="tab">Registrations</button>
+    <button data-tab="routes" role="tab">Routes</button>
+  </div>
+
+  <section id="regs">
+    <div class="row" style="justify-content:flex-start;margin-bottom:14px" id="filters"></div>
+    <div id="regList"></div>
+  </section>
+
+  <section id="routes" hidden>
+    <div class="row" style="margin-bottom:14px"><h2 style="margin:0">All routes</h2><button class="btn" id="addRoute">Add route</button></div>
+    <div id="routeList"></div>
+  </section>
+</main>
+<script src="js/common.js"></script>
+<script>
+let regs=[], routes=[], buses=[], filter='PENDING';
+
+async function loadStats(){
+  try{const d=await api('/admin/dashboard');
+   $('#stats').innerHTML=[[d.totalBuses,'Buses'],[d.totalRoutes,'Routes'],[d.delayedRoutes,'Delayed routes'],[d.pendingRegistrations,'Pending requests'],[d.approvedRegistrations,'Approved'],[d.totalStudents,'Students']].map(s=>'<div class="card stat"><b>'+s[0]+'</b><span>'+s[1]+'</span></div>').join('');
+  }catch(e){toast(e.message,'bad');}
+}
+
+/* ---------- Registrations ---------- */
+function showRegs(){
+  const fs=['PENDING','APPROVED','REJECTED','ALL'];
+  $('#filters').innerHTML=fs.map(f=>'<button class="btn sm '+(filter===f?'':'sec')+'" data-f="'+f+'">'+f[0]+f.slice(1).toLowerCase()+' ('+(f==='ALL'?regs.length:regs.filter(g=>g.status===f).length)+')</button>').join('');
+  const l=regs.filter(g=>filter==='ALL'||g.status===filter).sort((a,b)=>b.registrationId-a.registrationId);
+  $('#regList').innerHTML=l.length?'<div class="card tw"><table><thead><tr><th>Student</th><th>Route</th><th>Bus</th><th>Stop</th><th>Status</th><th>Decision</th></tr></thead><tbody>'
+   +l.map(g=>'<tr><td>'+esc(g.studentName)+'<div class="mut">'+esc(g.studentEmail)+'</div></td><td>'+esc(g.routeName)+'</td><td>'+esc(g.busNumber)+'</td><td>'+esc(g.stopName)+'</td><td>'+statusBadge(g.status)+'</td><td>'
+   +(g.status==='PENDING'?'<button class="btn sm" data-dec="approve" data-id="'+g.registrationId+'">Approve</button> <button class="btn bad sm" data-dec="reject" data-id="'+g.registrationId+'">Reject</button>':'—')+'</td></tr>').join('')+'</tbody></table></div>'
+   :'<div class="card empty">Nothing in this view.</div>';
+}
+async function loadRegs(){
+  $('#regList').innerHTML=skeleton(2);
+  try{regs=await api('/admin/registrations');showRegs();}catch(e){$('#regList').innerHTML='<div class="card empty">'+esc(e.message)+'</div>';}
+}
+async function decide(id,act){
+  if(act==='reject'&&!await confirmBox('Reject this request?','Reject',true))return;
+  try{await api('/admin/registrations/'+id+'/'+act,{method:'PUT'});toast('Request '+act+'d','ok');await Promise.all([loadRegs(),loadStats()]);}
+  catch(e){toast(e.message,'bad');}
+}
+
+/* ---------- Routes ---------- */
+function showRoutes(){
+  $('#routeList').innerHTML=routes.length?'<div class="card tw"><table><thead><tr><th>Route</th><th>Bus</th><th>Timing</th><th>Live status</th><th>Actions</th></tr></thead><tbody>'
+   +routes.map(r=>'<tr><td>'+esc(r.routeName)+'<div class="mut">'+stopsOf(r).length+' stops</div></td><td>'+esc(r.bus?r.bus.busNumber:'—')+'</td><td>'+t12(r.startTime)+' – '+t12(r.endTime)+'</td><td><select data-st="'+r.routeId+'" aria-label="Status of '+esc(r.routeName)+'" style="width:auto"><option value="ON_TIME" '+(r.status==='ON_TIME'?'selected':'')+'>On time</option><option value="DELAYED" '+(r.status==='DELAYED'?'selected':'')+'>Delayed</option></select></td><td><button class="btn sec sm" data-edit="'+r.routeId+'">Edit</button> <button class="btn bad sm" data-del="'+r.routeId+'">Delete</button></td></tr>').join('')+'</tbody></table></div>'
+   :'<div class="card empty">No routes yet. Use “Add route”.</div>';
+}
+async function loadRoutes(){
+  $('#routeList').innerHTML=skeleton(2);
+  try{[routes,buses]=await Promise.all([api('/admin/routes'),api('/admin/buses')]);showRoutes();}
+  catch(e){$('#routeList').innerHTML='<div class="card empty">'+esc(e.message)+'</div>';}
+}
+function routeForm(id){
+  const r=routes.find(x=>x.routeId===id)||{routeName:'',startPoint:'',endPoint:'',startTime:'07:00',endTime:'08:30',stops:'',status:'ON_TIME',bus:null};
+  if(!buses.length)return toast('Add a bus first (Buses page).','bad');
+  const o=openModal(id?'Edit route':'Add route',
+   '<label for="rn">Route name</label><input id="rn" value="'+esc(r.routeName)+'">'
+  +'<label for="rb">Assigned bus</label><select id="rb">'+buses.map(b=>'<option value="'+b.busId+'" '+(r.bus&&r.bus.busId===b.busId?'selected':'')+'>'+esc(b.busNumber)+(b.status==='ACTIVE'?'':' (maintenance)')+'</option>').join('')+'</select>'
+  +'<div class="grid2"><div><label for="sp">Start point</label><input id="sp" value="'+esc(r.startPoint)+'"></div><div><label for="ep">End point</label><input id="ep" value="'+esc(r.endPoint)+'"></div></div>'
+  +'<div class="grid2"><div><label for="s1">Start time</label><input id="s1" type="time" value="'+esc(r.startTime)+'"></div><div><label for="s2">End time</label><input id="s2" type="time" value="'+esc(r.endTime)+'"></div></div>'
+  +'<label for="sl">Stops in order (one per line)</label><textarea id="sl" rows="5">'+esc(stopsOf(r).join('\n'))+'</textarea>'
+  +'<label for="rs">Live status</label><select id="rs"><option value="ON_TIME" '+(r.status==='ON_TIME'?'selected':'')+'>On time</option><option value="DELAYED" '+(r.status==='DELAYED'?'selected':'')+'>Delayed</option></select>'
+  +'<div class="err" id="er"></div><div class="acts"><button class="btn sec" id="x">Cancel</button><button class="btn" id="ok">Save route</button></div>');
+  o.querySelector('#x').onclick=closeModal;
+  o.querySelector('#ok').onclick=async e=>{
+    const v=i=>o.querySelector('#'+i).value.trim(), stops=o.querySelector('#sl').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    if(!v('rn'))return o.querySelector('#er').textContent='Enter the route name.';
+    if(stops.length<2)return o.querySelector('#er').textContent='Add at least two stops.';
+    if(!v('s1')||!v('s2'))return o.querySelector('#er').textContent='Set start and end times.';
+    e.target.disabled=true;
+    const body={routeName:v('rn'),startPoint:v('sp')||stops[0],endPoint:v('ep')||stops[stops.length-1],startTime:v('s1'),endTime:v('s2'),stops:stops.join(', '),status:v('rs')};
+    try{await api('/admin/routes'+(id?'/'+id:'')+'?busId='+v('rb'),{method:id?'PUT':'POST',body});
+      closeModal();toast(id?'Route updated':'Route added','ok');await Promise.all([loadRoutes(),loadStats()]);}
+    catch(err){o.querySelector('#er').textContent=err.message;e.target.disabled=false;}
+  };
+}
+
+/* ---------- Events ---------- */
+function switchTab(t){
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  ['regs','routes'].forEach(s=>$('#'+s).hidden=s!==t);
+  if(t==='routes'&&!routes.length)loadRoutes();
+}
+document.addEventListener('click',async e=>{
+  let t;
+  if(t=e.target.closest('[data-tab]'))return switchTab(t.dataset.tab);
+  if(t=e.target.closest('[data-f]')){filter=t.dataset.f;return showRegs();}
+  if(t=e.target.closest('[data-dec]'))return decide(t.dataset.id,t.dataset.dec);
+  if(t=e.target.closest('[data-edit]'))return routeForm(+t.dataset.edit);
+  if(e.target.closest('#addRoute'))return routeForm(0);
+  if(t=e.target.closest('[data-del]')){
+    if(await confirmBox('Delete this route and all its registration requests?','Delete route',true)){
+      try{await api('/admin/routes/'+t.dataset.del,{method:'DELETE'});toast('Route deleted','ok');await Promise.all([loadRoutes(),loadStats(),loadRegs()]);}
+      catch(err){toast(err.message,'bad');}
+    }
+  }
+});
+document.addEventListener('change',async e=>{
+  const s=e.target.closest('[data-st]');if(!s)return;
+  try{await api('/admin/routes/'+s.dataset.st+'/status',{method:'PATCH',body:{status:s.value}});
+    toast(s.value==='DELAYED'?'Marked delayed — students see it now':'Marked on time','ok');loadStats();}
+  catch(err){toast(err.message,'bad');loadRoutes();}
+});
+(async()=>{
+  const u=await requireUser('ADMIN','admin-console.html');if(!u)return;
+  loadStats();loadRegs();
+})();
+</script>
+</body>
+</html>
